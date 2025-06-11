@@ -1,6 +1,6 @@
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" class="logo" width="120"/>
 
-# 可以多舉一些例子嗎 特別是super
+# super各種用法
 
 當然可以，以下用多個例子說明 `super()` 的用法，特別是在單一繼承、多重繼承、方法覆寫、以及 classmethod/staticmethod 情境。
 
