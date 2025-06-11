@@ -1,0 +1,225 @@
+<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" class="logo" width="120"/>
+
+# 可以多舉一些例子嗎 特別是super
+
+當然可以，以下用多個例子說明 `super()` 的用法，特別是在單一繼承、多重繼承、方法覆寫、以及 classmethod/staticmethod 情境。
+
+---
+
+## 1. 單一繼承中的 `super()`
+
+```python
+class Animal:
+    def __init__(self, name):
+        self.name = name
+        print(f"Animal: {self.name}")
+
+class Dog(Animal):
+    def __init__(self, name, breed):
+        super().__init__(name)  # 呼叫父類別的 __init__
+        self.breed = breed
+        print(f"Dog breed: {self.breed}")
+
+dog = Dog("Rex", "Labrador")
+# 輸出：
+# Animal: Rex
+# Dog breed: Labrador
+```
+
+- `super().__init__(name)` 會呼叫父類別的初始化方法，避免重複寫父類的初始化邏輯[^1][^5]。
+
+---
+
+## 2. 覆寫父類方法並擴充功能
+
+```python
+class Animal:
+    def speak(self):
+        return f"{self.name} makes a sound"
+
+class Dog(Animal):
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return f"{super().speak()} and barks"
+
+dog = Dog("Rex")
+print(dog.speak())
+# 輸出：Rex makes a sound and barks
+```
+
+- 子類別 `Dog` 覆寫 `speak`，但透過 `super().speak()` 保留並擴充父類功能[^5]。
+
+---
+
+## 3. 多重繼承與 MRO（方法解析順序）
+
+```python
+class Animal:
+    def __init__(self, name):
+        print(f"Animal: {name}")
+
+class Mammal(Animal):
+    def __init__(self, name):
+        print("Mammal")
+        super().__init__(name)
+
+class Canine(Animal):
+    def __init__(self, name):
+        print("Canine")
+        super().__init__(name)
+
+class Dog(Mammal, Canine):
+    def __init__(self, name):
+        print("Dog")
+        super().__init__(name)
+
+dog = Dog("Buddy")
+# 輸出順序：
+# Dog
+# Mammal
+# Canine
+# Animal: Buddy
+```
+
+- `super()` 會依據 MRO（Method Resolution Order）自動依繼承鏈呼叫正確的父類方法[^1][^2]。
+- 你可以透過 `Dog.__mro__` 查看解析順序。
+
+---
+
+## 4. `super()` 搭配 classmethod/staticmethod
+
+```python
+class Animal:
+    species = "Generic Animal"
+
+    @classmethod
+    def describe(cls):
+        return f"This is a {cls.species}"
+
+class Dog(Animal):
+    species = "Dog"
+
+    @classmethod
+    def describe(cls):
+        description = super().describe()
+        return f"{description} that is a loyal companion"
+
+print(Animal.describe())  # This is a Generic Animal
+print(Dog.describe())     # This is a Dog that is a loyal companion
+```
+
+- 在 classmethod 中也能用 `super()` 呼叫父類別的 classmethod[^3][^5]。
+
+---
+
+## 5. Python 2 vs Python 3 的 super() 語法
+
+- Python 2：`super(類別, self).方法()`
+- Python 3：可直接 `super().方法()`
+
+```python
+class A:
+    def foo(self):
+        print("A.foo")
+
+class B(A):
+    def foo(self):
+        super().foo()
+        print("B.foo")
+
+b = B()
+b.foo()
+# 輸出：
+# A.foo
+# B.foo
+```
+
+- Python 3 語法更簡潔[^2][^4]。
+
+---
+
+## 6. 實用場景：避免多重繼承重複調用（菱形繼承）
+
+```python
+class A:
+    def __init__(self):
+        print("A")
+class B(A):
+    def __init__(self):
+        print("B")
+        super().__init__()
+class C(A):
+    def __init__(self):
+        print("C")
+        super().__init__()
+class D(B, C):
+    def __init__(self):
+        print("D")
+        super().__init__()
+
+d = D()
+# 輸出：
+# D
+# B
+# C
+# A
+```
+
+- `super()` 可確保每個父類只被呼叫一次，避免重複執行父類邏輯，這在多重繼承時特別重要[^2]。
+
+---
+
+## 7. 進階：指定 super() 參數
+
+```python
+class Rectangle:
+    def __init__(self, length, width):
+        self.length = length
+        self.width = width
+
+    def area(self):
+        return self.length * self.width
+
+class Square(Rectangle):
+    def __init__(self, length):
+        super(Square, self).__init__(length, length)
+```
+
+- `super(子類, self)` 明確指定呼叫鏈，通常用於進階用法或兼容 Python 2[^4]。
+
+---
+
+### 小結
+
+- `super()` 讓你能簡潔且安全地呼叫父類方法，特別適合多重繼承、方法覆寫、class/staticmethod 等情境。
+- 它能自動處理 MRO，減少錯誤與重複調用。
+- 建議在繼承結構中優先使用 `super()`，而非直接指定父類名稱。
+
+---
+
+如需更多範例或進階應用，歡迎再詢問！
+
+<div style="text-align: center">⁂</div>
+
+[^1]: https://www.programiz.com/python-programming/methods/built-in/super
+
+[^2]: http://www.runoob.com/python/python-func-super.html
+
+[^3]: https://www.shiksha.com/online-courses/articles/super-function-in-python/
+
+[^4]: https://realpython.com/python-super/
+
+[^5]: https://ithelp.ithome.com.tw/articles/10346876
+
+[^6]: https://www.youtube.com/watch?v=HzyhmZqiaE8
+
+[^7]: https://ithelp.ithome.com.tw/articles/10222948
+
+[^8]: https://www.w3schools.com/python/ref_func_super.asp
+
+[^9]: https://www.digitalocean.com/community/tutorials/python-super
+
+[^10]: https://stackoverflow.com/questions/576169/understanding-python-super-with-init-methods
+
